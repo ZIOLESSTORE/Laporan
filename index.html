@@ -1,3 +1,235 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>HolyNightSmp | Laporan Pemain</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, #1b1b2f, #0f0f1a);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background: rgba(20, 20, 40, 0.95);
+    border-radius: 20px;
+    padding: 30px;
+    width: 100%;
+    max-width: 430px;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+h1 {
+    text-align: center;
+    color: #00f7ff;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #aaa;
+    margin-bottom: 25px;
+}
+
+label {
+    font-size: 14px;
+    margin-top: 15px;
+    display: block;
+    color: #00f7ff;
+}
+
+input, textarea, select {
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    background: #1f1f3d;
+    color: #fff;
+    font-size: 14px;
+}
+
+textarea {
+    resize: none;
+    height: 90px;
+}
+
+input[type="file"] {
+    padding: 8px;
+}
+
+.preview {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.preview img {
+    max-width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,255,255,0.3);
+    display: none;
+}
+
+button {
+    width: 100%;
+    margin-top: 25px;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #00f7ff, #008cff);
+    color: #000;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 15px #00f7ff;
+}
+
+.footer {
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    margin-top: 15px;
+}
+
+/* ✈️ Animasi Pesawat */
+.plane {
+    position: absolute;
+    font-size: 40px;
+    left: -60px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: none;
+    animation: fly 2s ease-in-out forwards;
+}
+
+@keyframes fly {
+    0% { left: -60px; opacity: 0; }
+    20% { opacity: 1; }
+    100% { left: 110%; opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="plane" id="plane">✈️</div>
+
+    <h1>HolyNightSmp</h1>
+    <div class="subtitle">Form Laporan Pemain</div>
+
+    <label>GAMERTAG PELAKU :</label>
+    <input type="text" id="gamertag" placeholder="Contoh: Player123">
+
+    <label>JENIS PELANGGARAN :</label>
+    <select id="pelanggaran">
+        <option value="">-- Pilih --</option>
+        <option>Toxic</option>
+        <option>Mengganggu</option>
+        <option>Grief Base</option>
+        <option>Rusuh</option>
+        <option>Lainnya</option>
+    </select>
+
+    <label>LAPORAN :</label>
+    <textarea id="laporan" placeholder="Jelaskan kronologi kejadian..."></textarea>
+
+    <label>FOTO BUKTI :</label>
+    <input type="file" id="foto" accept="image/*" onchange="previewFoto()">
+
+    <div class="preview">
+        <img id="previewImg">
+    </div>
+
+    <button onclick="kirimLaporan()">KIRIM LAPORAN</button>
+
+    <div class="footer">
+        © HolyNightSmp Report System
+    </div>
+</div>
+
 <script>
-eval(atob("KGZ1bmN0aW9uKCl7Y29uc3QgXzB4M2Y0YT1bJzE2NTg4MDc3ODk6QUFHQlI3VDdoNUg3eFpTbnBTUzhTdGpEQ0RNUkhkZ2oxSGcnLCc3Nzk5MTQwODc5JywnZm90bycsJ3ByZXZpZXdJbWcnLCdnYW1lcnRhZycsJ3BlbGFuZ2dhcmFuJywnbGFwb3JhbiIsJ2NoYXRfaWQnLCdjYXB0aW9uJywncGhvdG8nLCdzZW5kUGhvdG8nLCdwbGFuZScsJ2ZseScsJ0xBUE9SQU4gSE9MWU5JR0hUIFNNUCcsJ0dhZ2FsIG1lbmdpcmltIGxhcG9yYW4nLCdMYXBvcmFuIGJlcmhhc2lsIGRpa2lyaW0nXTt3aW5kb3cuX3ByZXZpZXdGb3RvPWZ1bmN0aW9uKCl7Y29uc3QgZT1kb2N1bWVudC5nZXRFbGVtZW50QnlJZChfMHgzZjRhWzJdKS5maWxlc1swXSx0PWRvY3VtZW50LmdldEVsZW1lbnRCeUlkKF8weDNmNGFbM10pO2lmKGUpe2NvbnN0IG49bmV3IEZpbGVSZWFkZXIoKTtuLm9ubG9hZD1vPT57dC5zcmM9by50YXJnZXQucmVzdWx0LHQuc3R5bGUuZGlzcGxheT0iYmxvY2sifTtuLnJlYWRBc0RhdGFVUkwoZSl9fTt3aW5kb3cuX2tpcmFtTGFwb3Jhbj1mdW5jdGlvbigpe2NvbnN0IGU9ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoXzB4M2Y0YVs0XSkudmFsdWUsdD1kb2N1bWVudC5nZXRFbGVtZW50QnlJZChfMHgzZjRhWzVdKS52YWx1ZSxuPWRvY3VtZW50LmdldEVsZW1lbnRCeUlkKF8weDNmNGFbNl0pLnZhbHVlLG89ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoXzB4M2Y0YVsyXSkpLmZpbGVzWzBdO2lmKCFlfHx8IXR8fCFufHwhbylyZXR1cm4gYWxlcnQoIkhhcmFwIGlzaSBzZW11YSBkYXRhISIpO2NvbnN0IGM9YFzwn5qAIFx1MDAwMCBMQVBPVE9SQU4gSE9MWU5JR0hUIFNNUFxuXG7wn5mMICR7ZX1cblxu4pqg4pmlIFBlbGFuZ2dhcmFuOlxuJHt0fVxuXG7wn5mI4pmlIExhcG9yYW46XG4ke259YCxhPW5ldyBGb3JtRGF0YSgpO2EuYXBwZW5kKF8weDNmNGFbN10sXzB4M2Y0YVswXSksYS5hcHBlbmQoXzB4M2Y0YVs4XSxjKSxhLmFwcGVuZChfMHgzZjRhWzldLG8pLGZldGNoKGBodHRwczovL2FwaS50ZWxlZ3JhbS5vcmcvYm90JHtfMHgzZjRhWzBdfS8ke18weDNmNGFbMTBdfWAsIHttZXRob2Q6IlBPU1QiLGJvZHk6YX0pLnRoZW4oci0+e3Iub2smJihkb2N1bWVudC5nZXRFbGVtZW50QnlJZChfMHgzZjRhWzExXSkuZGlzcGxheT0iYmxvY2siLGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKF8weDNmNGFbMTFdKS5zdHlsZS5hbmltYXRpb249Ilx1MDAwMCIsc2V0VGltZW91dCgoKT0+YWxlcnQoXzB4M2Y0YVsxNl0pLG5vbGwsMjAwMCkpKTp2b2lkIGFsZXJ0KF8weDNmNGFbMTVdKX0pLmNhdGNoKGU9PmFsZXJ0KCJFcnJvcjogIitlKSl9fSkoKTs="));
-          </script>
+const BOT_TOKEN = "7470757913:AAGBR7T7h5H7xZSnpS8StjDCDMRH8dgj1Hg";
+const CHAT_ID = "7799140879";
+
+function previewFoto() {
+    const file = document.getElementById("foto").files[0];
+    const img = document.getElementById("previewImg");
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            img.src = e.target.result;
+            img.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function kirimLaporan() {
+    const gamertag = document.getElementById("gamertag").value;
+    const pelanggaran = document.getElementById("pelanggaran").value;
+    const laporan = document.getElementById("laporan").value;
+    const foto = document.getElementById("foto").files[0];
+
+    if (!gamertag || !pelanggaran || !laporan || !foto) {
+        alert("Harap isi semua data!");
+        return;
+    }
+
+    const caption = 
+`🚨 LAPORAN HOLYNIGHT SMP
+
+👤 Gamertag:
+${gamertag}
+
+⚠️ Pelanggaran:
+${pelanggaran}
+
+📝 Laporan:
+${laporan}`;
+
+    const formData = new FormData();
+    formData.append("chat_id", CHAT_ID);
+    formData.append("caption", caption);
+    formData.append("photo", foto);
+
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+        method: "POST",
+        body: formData
+    }).then(res => {
+        if (res.ok) {
+            const plane = document.getElementById("plane");
+            plane.style.display = "block";
+            plane.style.animation = "none";
+            plane.offsetHeight;
+            plane.style.animation = "fly 2s ease-in-out forwards";
+
+            setTimeout(() => {
+                alert("Laporan berhasil dikirim!");
+                location.reload();
+            }, 2000);
+        } else {
+            alert("Gagal mengirim laporan!");
+        }
+    }).catch(err => alert("Error: " + err));
+}
+</script>
+
+</body>
+          </html>
