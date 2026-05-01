@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Sistem - Kirim ke Discord</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header .icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: #a0a0b0;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #c0c0d0;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group textarea:focus {
+            border-color: #5865F2;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.2);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input[type="text"]::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Styling untuk upload foto */
+        .file-upload-wrapper {
+            position: relative;
+        }
+
+        .file-upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .file-upload-area:hover {
+            border-color: #5865F2;
+            background: rgba(88, 101, 242, 0.05);
+        }
+
+        .file-upload-area.dragover {
+            border-color: #5865F2;
+            background: rgba(88, 101, 242, 0.1);
+        }
+
+        .file-upload-area .upload-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-area p {
+            color: #a0a0b0;
+            font-size: 14px;
+        }
+
+        .file-upload-area .file-name {
+            color: #5865F2;
+            font-weight: 500;
+            margin-top: 5px;
+            word-break: break-all;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* Preview gambar */
+        .image-preview {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .image-preview.active {
+            display: block;
+        }
+
+        .image-preview img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .remove-image {
+            display: inline-block;
+            margin-top: 8px;
+            color: #ff6b6b;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: underline;
+        }
+
+        /* Tombol submit */
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: #5865F2;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            font-family: inherit;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background: #4752C4;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(88, 101, 242, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            background: #4a4a5a;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+
+        .btn-submit.loading .btn-text {
+            display: none;
+        }
+
+        .btn-submit.loading .loading-spinner {
+            display: block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Notifikasi */
+        .notification {
+            display: none;
+            padding: 14px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .notification.success {
+            display: block;
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.4);
+            color: #2ecc71;
+        }
+
+        .notification.error {
+            display: block;
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.4);
+            color: #e74c3c;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsif */
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 20px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="icon">📋</div>
+            <h1>Report Sistem</h1>
+            <p>Laporkan masalah atau berikan feedback</p>
+        </div>
+
+        <!-- Form -->
+        <form id="reportForm">
+            <!-- Nama Komputer / MC Name -->
+            <div class="form-group">
+                <label for="mcName">🖥️ MC Name / Nama Komputer</label>
+                <input 
+                    type="text" 
+                    id="mcName" 
+                    name="mcName" 
+                    placeholder="Masukkan nama komputer atau MC Name..."
+                    required
+                    autocomplete="off"
+                >
+            </div>
+
+            <!-- Alasan -->
+            <div class="form-group">
+                <label for="alasan">📝 Alasan Report</label>
+                <textarea 
+                    id="alasan" 
+                    name="alasan" 
+                    placeholder="Jelaskan alasan report secara detail..."
+                    required
+                ></textarea>
+            </div>
+
+            <!-- Upload Foto -->
+            <div class="form-group">
+                <label for="fileInput">📸 Foto / Screenshot</label>
+                <div class="file-upload-area" id="dropArea">
+                    <div class="upload-icon">🖼️</div>
+                    <p>Klik atau seret gambar ke sini</p>
+                    <p style="font-size: 11px; color: #666; margin-top: 5px;">Maksimal 8MB (JPG, PNG, GIF, WEBP)</p>
+                    <p class="file-name" id="fileName"></p>
+                </div>
+                <input 
+                    type="file" 
+                    id="fileInput" 
+                    name="foto" 
+                    accept="image/*"
+                >
+                <!-- Preview -->
+                <div class="image-preview" id="imagePreview">
+                    <img id="previewImg" src="" alt="Preview">
+                    <span class="remove-image" id="removeImage">✕ Hapus gambar</span>
+                </div>
+            </div>
+
+            <!-- Tombol Submit -->
+            <button type="submit" class="btn-submit" id="submitBtn">
+                <span class="btn-text">🚀 Kirim Report</span>
+                <div class="loading-spinner"></div>
+            </button>
+        </form>
+
+        <!-- Notifikasi -->
+        <div class="notification" id="notification"></div>
+    </div>
+
+    <script>
+        // ============================================
+        // KONFIGURASI BOT DISCORD
+        // ============================================
+        // Ganti dengan data webhook Discord kamu
+        const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1234567890/abcdefghijklmnopqrstuvwxyz';
+        // Nama channel yang akan ditampilkan di embed
+        const CHANNEL_NAME = '📋-report-sistem';
+        // ============================================
+
+        // Element references
+        const reportForm = document.getElementById('reportForm');
+        const mcNameInput = document.getElementById('mcName');
+        const alasanInput = document.getElementById('alasan');
+        const fileInput = document.getElementById('fileInput');
+        const dropArea = document.getElementById('dropArea');
+        const fileNameDisplay = document.getElementById('fileName');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const removeImageBtn = document.getElementById('removeImage');
+        const submitBtn = document.getElementById('submitBtn');
+        const notification = document.getElementById('notification');
+
+        let selectedFile = null;
+
+        // ============================================
+        // HANDLER UPLOAD FOTO
+        // ============================================
+
+        // Klik area upload
+        dropArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // File dipilih via input
+        fileInput.addEventListener('change', (e) => {
+            handleFile(e.target.files[0]);
+        });
+
+        // Drag and drop
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.classList.add('dragover');
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('dragover');
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleFile(file);
+            }
+        });
+
+        // Handle file yang dipilih
+        function handleFile(file) {
+            if (!file) return;
+
+            // Validasi tipe file
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                showNotification('Format file tidak didukung. Gunakan JPG, PNG, GIF, atau WEBP.', 'error');
+                return;
+            }
+
+            // Validasi ukuran (max 8MB)
+            if (file.size > 8 * 1024 * 1024) {
+                showNotification('Ukuran file terlalu besar. Maksimal 8MB.', 'error');
+                return;
+            }
+
+            selectedFile = file;
+            fileNameDisplay.textContent = `📎 ${file.name} (${formatFileSize(file.size)})`;
+
+            // Tampilkan preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                imagePreview.classList.add('active');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Hapus gambar
+        removeImageBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            fileNameDisplay.textContent = '';
+            imagePreview.classList.remove('active');
+            previewImg.src = '';
+        });
+
+        // Format ukuran file
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        // ============================================
+        // KIRIM KE DISCORD
+        // ============================================
+
+        reportForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const mcName = mcNameInput.value.trim();
+            const alasan = alasanInput.value.trim();
+
+            if (!mcName || !alasan) {
+                showNotification('Mohon isi semua field yang diperlukan.', 'error');
+                return;
+            }
+
+            // Set loading state
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+            hideNotification();
+
+            try {
+                // Siapkan FormData
+                const formData = new FormData();
+                
+                // Tambahkan file jika ada
+                if (selectedFile) {
+                    formData.append('file', selectedFile, selectedFile.name);
+                }
+
+                // Buat payload JSON untuk embed
+                const payloadJson = {
+                    content: null,
+                    embeds: [
+                        {
+                            title: '📋 **Report Sistem Baru**',
+                            color: 0x5865F2, // Warna Discord blurple
+                            fields: [
+                                {
+                                    name: '🖥️ **MC Name / Nama Komputer**',
+                                    value: `\`\`\`${escapeMarkdown(mcName)}\`\`\``,
+                                    inline: false
+                                },
+                                {
+                                    name: '📝 **Alasan Report**',
+                                    value: `\`\`\`${escapeMarkdown(alasan)}\`\`\``,
+                                    inline: false
+                                }
+                            ],
+                            footer: {
+                                text: `📨 Dikirim dari channel: ${CHANNEL_NAME} • ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`
+                            },
+                            timestamp: new Date().toISOString()
+                        }
+                    ]
+                };
+
+                // Tambahkan payload_json ke FormData
+                formData.append('payload_json', JSON.stringify(payloadJson));
+
+                // Kirim ke Discord webhook
+                const response = await fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    showNotification('✅ Report berhasil dikirim ke Discord!', 'success');
+                    // Reset form
+                    reportForm.reset();
+                    selectedFile = null;
+                    fileNameDisplay.textContent = '';
+                    imagePreview.classList.remove('active');
+                    previewImg.src = '';
+                    fileInput.value = '';
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Discord API Error:', errorData);
+                    showNotification('❌ Gagal mengirim report. Periksa konfigurasi webhook.', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('❌ Terjadi kesalahan jaringan. Coba lagi nanti.', 'error');
+            } finally {
+                // Hapus loading state
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Escape karakter markdown Discord
+        function escapeMarkdown(text) {
+            return text.replace(/[`*_~|\\]/g, '\\$&');
+        }
+
+        // ============================================
+        // NOTIFIKASI
+        // ============================================
+
+        function showNotification(message, type) {
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+
+            // Auto hide setelah 5 detik untuk success
+            if (type === 'success') {
+                setTimeout(() => {
+                    hideNotification();
+                }, 5000);
+            }
+        }
+
+        function hideNotification() {
+            notification.style.display = 'none';
+            notification.className = 'notification';
+        }
+    </script>
+</body>
+  </html>
